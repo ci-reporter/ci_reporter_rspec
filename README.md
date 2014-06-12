@@ -6,6 +6,11 @@ system.
 [rspec]: https://www.relishapp.com/rspec
 [ci]: https://github.com/ci-reporter/ci_reporter
 
+## Supported versions
+
+The latest release of RSpec 2.14 and 2.99 are supported. RSpec 3 is
+not yet supported.
+
 ## Installation
 
 Add this line to your application's Gemfile:
