@@ -5,6 +5,7 @@ system.
 
 [![Gem Version](https://badge.fury.io/rb/ci_reporter_rspec.svg)](http://badge.fury.io/rb/ci_reporter_rspec)
 [![Build Status](https://travis-ci.org/ci-reporter/ci_reporter_rspec.svg?branch=master)](https://travis-ci.org/ci-reporter/ci_reporter_rspec)
+[![Dependency Status](https://gemnasium.com/ci-reporter/ci_reporter_rspec.svg)](https://gemnasium.com/ci-reporter/ci_reporter_rspec)
 [![Code Climate](https://codeclimate.com/github/ci-reporter/ci_reporter_rspec.png)](https://codeclimate.com/github/ci-reporter/ci_reporter_rspec)
 
 [rspec]: https://www.relishapp.com/rspec
