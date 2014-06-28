@@ -1,6 +1,6 @@
 module CI
   module Reporter
-    class RSpec
+    module RSpecVersion
       VERSION = "0.0.1"
     end
   end
