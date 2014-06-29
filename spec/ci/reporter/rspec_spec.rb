@@ -11,7 +11,6 @@ describe "The RSpec reporter" do
     @report_mgr = double("report manager")
     @options = double("options")
     @args = [@options, StringIO.new("")]
-    @args.shift unless defined?(::Spec) && ::Spec::VERSION::MAJOR == 1 && ::Spec::VERSION::MINOR >= 1
     @fmt = CI::Reporter::RSpecFormatter.new *@args
     @fmt.report_manager = @report_mgr
   end
