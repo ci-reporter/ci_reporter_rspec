@@ -5,7 +5,7 @@ require 'ci/reporter/rspec/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "ci_reporter_rspec"
-  spec.version       = CI::Reporter::RSpecVersion::VERSION
+  spec.version       = CI::Reporter::RSpec::VERSION
   spec.authors       = ["Nick Sieger", "Jake Goulding"]
   spec.email         = ["nick@nicksieger.com", "jake.goulding@gmail.com"]
   spec.summary       = %q{Connects CI::Reporter to RSpec}
