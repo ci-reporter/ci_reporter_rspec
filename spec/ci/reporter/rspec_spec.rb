@@ -12,20 +12,8 @@ describe "The RSpec reporter" do
     @options = double("options")
     @args = [@options, StringIO.new("")]
     @args.shift unless defined?(::Spec) && ::Spec::VERSION::MAJOR == 1 && ::Spec::VERSION::MINOR >= 1
-    @fmt = CI::Reporter::RSpec.new *@args
+    @fmt = CI::Reporter::RSpecFormatter.new *@args
     @fmt.report_manager = @report_mgr
-    @formatter = double("formatter")
-    @fmt.formatter = @formatter
-  end
-
-  it "should use a progress bar formatter by default" do
-    fmt = CI::Reporter::RSpec.new *@args
-    fmt.formatter.should be_instance_of(CI::Reporter::RSpecFormatters::ProgressFormatter)
-  end
-
-  it "should use a specdoc formatter for RSpecDoc" do
-    fmt = CI::Reporter::RSpecDoc.new *@args
-    fmt.formatter.should be_instance_of(CI::Reporter::RSpecFormatters::DocFormatter)
   end
 
   def rspec2_failing_example(exception_text)
@@ -52,19 +40,6 @@ describe "The RSpec reporter" do
     example_group = double "example group"
     example_group.stub(:description).and_return "A context"
 
-    @formatter.should_receive(:start).with(3)
-    @formatter.should_receive(:example_group_started).with(example_group)
-    @formatter.should_receive(:example_started).exactly(3).times
-    @formatter.should_receive(:example_passed).once
-    @formatter.should_receive(:example_failed).once
-    @formatter.should_receive(:example_pending).once
-    @formatter.should_receive(:start_dump).once
-    @formatter.should_receive(:dump_failure).once
-    @formatter.should_receive(:dump_summary).once
-    @formatter.should_receive(:dump_pending).once
-    @formatter.should_receive(:dump_failures).once
-    @formatter.should_receive(:close).once
-
     @fmt.start(3)
     @fmt.example_group_started(example_group)
     @fmt.example_started("should pass")
@@ -74,7 +49,6 @@ describe "The RSpec reporter" do
     @fmt.example_started("should be pending")
     @fmt.example_pending("A context", "should be pending", "Not Yet Implemented")
     @fmt.start_dump
-    @fmt.dump_failure(1, double("failure"))
     @fmt.dump_summary(0.1, 3, 1, 1)
     @fmt.dump_pending
     @fmt.close
@@ -86,12 +60,6 @@ describe "The RSpec reporter" do
     example = double "example"
     example.stub(:description).and_return "should do something"
 
-    @formatter.should_receive(:start)
-    @formatter.should_receive(:example_group_started).with(group)
-    @formatter.should_receive(:example_started).with(example).once
-    @formatter.should_receive(:example_passed).once
-    @formatter.should_receive(:dump_summary)
-    @formatter.should_receive(:dump_failures).once
     @report_mgr.should_receive(:write_report) do |suite|
       suite.testcases.last.name.should == "should do something"
     end
@@ -107,12 +75,6 @@ describe "The RSpec reporter" do
     example_group = double "example group"
     example_group.stub(:description).and_return "A context"
 
-    @formatter.should_receive(:start)
-    @formatter.should_receive(:example_group_started).with(example_group)
-    @formatter.should_receive(:example_started).once
-    @formatter.should_receive(:example_failed).once
-    @formatter.should_receive(:dump_summary)
-    @formatter.should_receive(:dump_failures).once
     @report_mgr.should_receive(:write_report)
 
     @fmt.start(2)
@@ -123,8 +85,7 @@ describe "The RSpec reporter" do
 
   describe 'RSpec2Failure' do
     before(:each) do
-      @formatter = double "formatter"
-      @formatter.should_receive(:format_backtrace).and_return("backtrace")
+      @formatter = CI::Reporter::RSpecFormatter.new
       @rspec20_example = double('RSpec2.0 Example',
                               :execution_result => {:exception_encountered => StandardError.new('rspec2.0 ftw')},
                               :metadata => {})

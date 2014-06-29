@@ -4,39 +4,59 @@ require 'rake'
 require 'ci/reporter/internal'
 include CI::Reporter::Internal
 
-describe "ci_reporter ci:setup:rspec task" do
+describe "Rake tasks" do
+  let (:rake) { Rake::Application.new }
+
   before(:each) do
-    @rake = Rake::Application.new
-    Rake.application = @rake
+    Rake.application = rake
     load CI_REPORTER_LIB + '/ci/reporter/rake/rspec.rb'
     save_env "CI_REPORTS"
     save_env "SPEC_OPTS"
     ENV["CI_REPORTS"] = "some-bogus-nonexistent-directory-that-wont-fail-rm_rf"
   end
+
   after(:each) do
     restore_env "SPEC_OPTS"
     restore_env "CI_REPORTS"
     Rake.application = nil
   end
 
-  it "should set ENV['SPEC_OPTS'] to include rspec formatter args" do
-    @rake["ci:setup:rspec"].invoke
-    ENV["SPEC_OPTS"].should =~ /--require.*rspec_loader.*--format.*CI::Reporter::RSpec/
+  subject(:spec_opts) { ENV["SPEC_OPTS"] }
+
+  context "ci:setup:rspec" do
+    before do
+      rake["ci:setup:rspec"].invoke
+    end
+
+    it { should match(/--require\s+\S+rspec_loader/) }
+    it { should match(/--format\s+CI::Reporter::RSpecFormatter\b/) }
+    it { should match(/--format\s+progress/) }
   end
 
-  it "should set ENV['SPEC_OPTS'] to include rspec doc formatter if task is ci:setup:rspecdoc" do
-    @rake["ci:setup:rspecdoc"].invoke
-    ENV["SPEC_OPTS"].should =~ /--require.*rspec_loader.*--format.*CI::Reporter::RSpecDoc/
+  context "ci:setup:rspecdoc" do
+    before do
+      rake["ci:setup:rspecdoc"].invoke
+    end
+
+    it { should match(/--require\s+\S+rspec_loader/) }
+    it { should match(/--format\s+CI::Reporter::RSpecFormatter\b/) }
+    it { should match(/--format\s+documentation/) }
   end
 
-  it "should set ENV['SPEC_OPTS'] to include rspec base formatter if task is ci:setup:rspecbase" do
-    @rake["ci:setup:rspecbase"].invoke
-    ENV["SPEC_OPTS"].should =~ /--require.*rspec_loader.*--format.*CI::Reporter::RSpecBase/
+  context "ci:setup:rspecbase" do
+    before do
+      rake["ci:setup:rspecbase"].invoke
+    end
+
+    it { should match(/--require\s+\S+rspec_loader/) }
+    it { should match(/--format\s+CI::Reporter::RSpecFormatter\b/) }
   end
 
-  it "should append to ENV['SPEC_OPTS'] if it already contains a value" do
-    ENV["SPEC_OPTS"] = "somevalue".freeze
-    @rake["ci:setup:rspec"].invoke
-    ENV["SPEC_OPTS"].should =~ /somevalue.*--require.*rspec_loader.*--format.*CI::Reporter::RSpec/
+  context "with existing options" do
+    it "appends new options" do
+      ENV["SPEC_OPTS"] = "previous-value".freeze
+      rake["ci:setup:rspec"].invoke
+      spec_opts.should match(/previous-value.*CI::Reporter::RSpecFormatter\b/)
+    end
   end
 end

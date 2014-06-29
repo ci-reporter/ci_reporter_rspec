@@ -1,14 +1,9 @@
 require 'ci/reporter/core'
+require 'rspec/core/formatters/base_formatter'
 
 module CI
   module Reporter
     module RSpecFormatters
-      require 'rspec/core/formatters/base_formatter'
-      require 'rspec/core/formatters/progress_formatter'
-      require 'rspec/core/formatters/documentation_formatter'
-      BaseFormatter = ::RSpec::Core::Formatters::BaseFormatter
-      ProgressFormatter = ::RSpec::Core::Formatters::ProgressFormatter
-      DocFormatter = ::RSpec::Core::Formatters::DocumentationFormatter
       # See https://github.com/nicksieger/ci_reporter/issues/76 and
       #     https://github.com/nicksieger/ci_reporter/issues/80
       require 'rspec/core/version'
@@ -63,34 +58,28 @@ module CI
     end
 
     # Custom +RSpec+ formatter used to hook into the spec runs and capture results.
-    class RSpec
+    class RSpecFormatter < ::RSpec::Core::Formatters::BaseFormatter
       attr_accessor :report_manager
-      attr_accessor :formatter
       def initialize(*args)
-        @formatter ||= RSpecFormatters::ProgressFormatter.new(*args)
         @report_manager = ReportManager.new("spec")
         @suite = nil
       end
 
       def example_group_started(example_group)
-        @formatter.example_group_started(example_group)
         new_suite(description_for(example_group))
       end
 
       def example_started(name_or_example)
-        @formatter.example_started(name_or_example)
         spec = TestCase.new
         @suite.testcases << spec
         spec.start
       end
 
       def example_failed(name_or_example, *rest)
-        @formatter.example_failed(name_or_example, *rest)
-
         # In case we fail in before(:all)
         example_started(name_or_example) if @suite.testcases.empty?
 
-        failure = RSpec2Failure.new(name_or_example, @formatter)
+        failure = RSpec2Failure.new(name_or_example, self)
 
         spec = @suite.testcases.last
         spec.finish
@@ -99,14 +88,12 @@ module CI
       end
 
       def example_passed(name_or_example)
-        @formatter.example_passed(name_or_example)
         spec = @suite.testcases.last
         spec.finish
         spec.name = description_for(name_or_example)
       end
 
       def example_pending(*args)
-        @formatter.example_pending(*args)
         name = description_for(args[0])
         spec = @suite.testcases.last
         spec.finish
@@ -115,18 +102,7 @@ module CI
       end
 
       def dump_summary(*args)
-        @formatter.dump_summary(*args)
         write_report
-        @formatter.dump_failures
-      end
-
-      def respond_to?(*args)
-        @formatter.respond_to?(*args)
-      end
-
-      # Pass through other methods to RSpec formatter for compatibility
-      def method_missing(meth,*args,&block)
-        @formatter.send(meth,*args,&block)
       end
 
       private
@@ -153,20 +129,6 @@ module CI
         write_report if @suite
         @suite = TestSuite.new name
         @suite.start
-      end
-    end
-
-    class RSpecDoc < RSpec
-      def initialize(*args)
-        @formatter = RSpecFormatters::DocFormatter.new(*args)
-        super
-      end
-    end
-
-    class RSpecBase < RSpec
-      def initialize(*args)
-        @formatter = RSpecFormatters::BaseFormatter.new(*args)
-        super
       end
     end
   end
