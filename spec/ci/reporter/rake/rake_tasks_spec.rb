@@ -4,7 +4,7 @@ require 'rake'
 require 'ci/reporter/internal'
 include CI::Reporter::Internal
 
-describe "ci_reporter ci:setup:rspec task" do
+describe "Rake tasks" do
   let (:rake) { Rake::Application.new }
 
   before(:each) do
@@ -29,7 +29,7 @@ describe "ci_reporter ci:setup:rspec task" do
     end
 
     it { should match(/--require\s+\S+rspec_loader/) }
-    it { should match(/--format\s+CI::Reporter::RSpec/) }
+    it { should match(/--format\s+CI::Reporter::RSpecFormatter\b/) }
     it { should match(/--format\s+progress/) }
   end
 
@@ -39,7 +39,7 @@ describe "ci_reporter ci:setup:rspec task" do
     end
 
     it { should match(/--require\s+\S+rspec_loader/) }
-    it { should match(/--format\s+CI::Reporter::RSpec/) }
+    it { should match(/--format\s+CI::Reporter::RSpecFormatter\b/) }
     it { should match(/--format\s+documentation/) }
   end
 
@@ -49,14 +49,14 @@ describe "ci_reporter ci:setup:rspec task" do
     end
 
     it { should match(/--require\s+\S+rspec_loader/) }
-    it { should match(/--format\s+CI::Reporter::RSpec/) }
+    it { should match(/--format\s+CI::Reporter::RSpecFormatter\b/) }
   end
 
   context "with existing options" do
     it "appends new options" do
       ENV["SPEC_OPTS"] = "previous-value".freeze
       rake["ci:setup:rspec"].invoke
-      spec_opts.should match(/previous-value.*CI::Reporter::RSpec/)
+      spec_opts.should match(/previous-value.*CI::Reporter::RSpecFormatter\b/)
     end
   end
 end

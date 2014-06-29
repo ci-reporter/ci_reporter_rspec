@@ -9,7 +9,7 @@ namespace :generate do
 
   task :rspec do
     rspec = "#{Gem.loaded_specs['rspec-core'].gem_dir}/exe/rspec"
-    run_ruby_acceptance "-S #{rspec} --require ci/reporter/rake/rspec_loader --format CI::Reporter::RSpec acceptance/rspec_example_spec.rb"
+    run_ruby_acceptance "-S #{rspec} --require ci/reporter/rake/rspec_loader --format CI::Reporter::RSpecFormatter acceptance/rspec_example_spec.rb"
   end
 
   task :all => [:clean, :rspec]

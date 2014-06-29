@@ -12,7 +12,7 @@ describe "The RSpec reporter" do
     @options = double("options")
     @args = [@options, StringIO.new("")]
     @args.shift unless defined?(::Spec) && ::Spec::VERSION::MAJOR == 1 && ::Spec::VERSION::MINOR >= 1
-    @fmt = CI::Reporter::RSpec.new *@args
+    @fmt = CI::Reporter::RSpecFormatter.new *@args
     @fmt.report_manager = @report_mgr
   end
 
@@ -85,7 +85,7 @@ describe "The RSpec reporter" do
 
   describe 'RSpec2Failure' do
     before(:each) do
-      @formatter = CI::Reporter::RSpec.new
+      @formatter = CI::Reporter::RSpecFormatter.new
       @rspec20_example = double('RSpec2.0 Example',
                               :execution_result => {:exception_encountered => StandardError.new('rspec2.0 ftw')},
                               :metadata => {})

@@ -9,7 +9,7 @@ namespace :ci do
     def setup_spec_opts(*extra_options)
       base_opts = [
         "--require", CI::Reporter.maybe_quote_filename("#{File.dirname(__FILE__)}/rspec_loader.rb"),
-        "--format", "CI::Reporter::RSpec"
+        "--format", "CI::Reporter::RSpecFormatter"
       ]
 
       spec_opts = (base_opts + extra_options).join(" ")

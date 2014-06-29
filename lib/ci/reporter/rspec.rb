@@ -58,7 +58,7 @@ module CI
     end
 
     # Custom +RSpec+ formatter used to hook into the spec runs and capture results.
-    class RSpec < ::RSpec::Core::Formatters::BaseFormatter
+    class RSpecFormatter < ::RSpec::Core::Formatters::BaseFormatter
       attr_accessor :report_manager
       def initialize(*args)
         @report_manager = ReportManager.new("spec")
