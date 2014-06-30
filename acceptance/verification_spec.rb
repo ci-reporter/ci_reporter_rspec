@@ -1,33 +1,127 @@
 require 'rexml/document'
+require 'ci/reporter/test_utils/accessor'
+require 'ci/reporter/test_utils/shared_examples'
 
 REPORTS_DIR = File.dirname(__FILE__) + '/reports'
 
+shared_examples "assertions are not tracked" do
+  describe "the assertion count" do
+    subject { result.assertions_count }
+    it { should eql 0 }
+  end
+end
+
 describe "RSpec acceptance" do
-  it "should generate two XML files" do
-    File.exist?(File.join(REPORTS_DIR, 'SPEC-RSpec-example.xml')).should == true
-    File.exist?(File.join(REPORTS_DIR, 'SPEC-RSpec-example-nested.xml')).should == true
+  include CI::Reporter::TestUtils::SharedExamples
+  Accessor = CI::Reporter::TestUtils::Accessor
+
+  let(:passing_report_path) { File.join(REPORTS_DIR, 'SPEC-a-passing-example.xml') }
+  let(:failing_report_path) { File.join(REPORTS_DIR, 'SPEC-a-failing-example.xml') }
+  let(:errored_report_path) { File.join(REPORTS_DIR, 'SPEC-an-errored-example.xml') }
+  let(:pending_report_path) { File.join(REPORTS_DIR, 'SPEC-a-pending-example.xml') }
+  let(:failure_in_before_report_path) { File.join(REPORTS_DIR, 'SPEC-a-failure-in-a-before-block.xml') }
+  let(:nested_outer_report_path) { File.join(REPORTS_DIR, 'SPEC-outer-context.xml') }
+  let(:nested_inner_report_path) { File.join(REPORTS_DIR, 'SPEC-outer-context-inner-context.xml') }
+
+  describe "the passing test" do
+    subject(:result) { Accessor.new(load_xml_result(passing_report_path)) }
+
+    it { should have(0).errors }
+    it { should have(0).failures }
+    it { should have(1).testcases }
+
+    it_behaves_like "a report with consistent attribute counts"
+    it_behaves_like "assertions are not tracked"
+    it_behaves_like "nothing was output"
   end
 
-  it "should have two tests and one failure" do
-    doc = File.open(File.join(REPORTS_DIR, 'SPEC-RSpec-example.xml')) do |f|
-      REXML::Document.new(f)
+  describe "the failing test" do
+    subject(:result) { Accessor.new(load_xml_result(failing_report_path)) }
+
+    it { should have(0).errors }
+    it { should have(1).failures }
+    it { should have(1).testcases }
+
+    describe "the failure" do
+      subject(:failure) { result.failures.first }
+      it "indicates the type" do
+        failure.attributes['type'].should =~ /ExpectationNotMetError/
+      end
     end
-    doc.root.attributes["errors"].should == "0"
-    doc.root.attributes["failures"].should == "1"
-    doc.root.attributes["tests"].should == "3"
-    doc.root.elements.to_a("/testsuite/testcase").size.should == 3
-    failures = doc.root.elements.to_a("/testsuite/testcase/failure")
-    failures.size.should == 1
-    failures.first.attributes["type"].should =~ /ExpectationNotMetError/
+
+    it_behaves_like "a report with consistent attribute counts"
+    it_behaves_like "assertions are not tracked"
+    it_behaves_like "nothing was output"
   end
 
-  it "should have one test in the nested example report" do
-    doc = File.open(File.join(REPORTS_DIR, 'SPEC-RSpec-example-nested.xml')) do |f|
+  describe "the errored test" do
+    subject(:result) { Accessor.new(load_xml_result(errored_report_path)) }
+
+    it { should have(1).errors }
+    it { should have(0).failures }
+    it { should have(1).testcases }
+
+    it_behaves_like "a report with consistent attribute counts"
+    it_behaves_like "assertions are not tracked"
+    it_behaves_like "nothing was output"
+  end
+
+  describe "the pending test" do
+    subject(:result) { Accessor.new(load_xml_result(pending_report_path)) }
+
+    it { should have(0).errors }
+    it { should have(0).failures }
+    it { should have(1).testcases }
+
+    describe "the skipped count" do
+      subject { result.skipped_count }
+      it { should eql 1 }
+    end
+
+    it_behaves_like "a report with consistent attribute counts"
+    it_behaves_like "assertions are not tracked"
+    it_behaves_like "nothing was output"
+  end
+
+  describe "the test that fails in a before block" do
+    subject(:result) { Accessor.new(load_xml_result(failure_in_before_report_path)) }
+
+    it { should have(0).errors }
+    it { should have(1).failures }
+    it { should have(1).testcases }
+
+    it_behaves_like "a report with consistent attribute counts"
+    it_behaves_like "assertions are not tracked"
+    it_behaves_like "nothing was output"
+  end
+
+  describe "the outer context" do
+    subject(:result) { Accessor.new(load_xml_result(nested_outer_report_path)) }
+
+    it { should have(0).errors }
+    it { should have(0).failures }
+    it { should have(1).testcases }
+
+    it_behaves_like "a report with consistent attribute counts"
+    it_behaves_like "assertions are not tracked"
+    it_behaves_like "nothing was output"
+  end
+
+  describe "the inner context" do
+    subject(:result) { Accessor.new(load_xml_result(nested_inner_report_path)) }
+
+    it { should have(0).errors }
+    it { should have(0).failures }
+    it { should have(1).testcases }
+
+    it_behaves_like "a report with consistent attribute counts"
+    it_behaves_like "assertions are not tracked"
+    it_behaves_like "nothing was output"
+  end
+
+  def load_xml_result(path)
+    File.open(path) do |f|
       REXML::Document.new(f)
     end
-    doc.root.attributes["errors"].should == "0"
-    doc.root.attributes["failures"].should == "0"
-    doc.root.attributes["tests"].should == "1"
-    doc.root.elements.to_a("/testsuite/testcase").size.should == 1
   end
 end
