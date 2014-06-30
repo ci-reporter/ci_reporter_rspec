@@ -1,6 +1,6 @@
 require "bundler/gem_tasks"
-require 'ci/reporter/internal'
-include CI::Reporter::Internal
+require 'ci/reporter/test_utils/rake'
+include CI::Reporter::TestUtils::Rake
 
 namespace :generate do
   task :clean do
