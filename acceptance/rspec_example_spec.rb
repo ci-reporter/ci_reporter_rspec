@@ -1,17 +1,26 @@
-describe "RSpec example" do
-  it "should succeed" do
+describe "a passing example" do
+  it "passes" do
     true.should be true
-    nil.should be_nil
   end
+end
 
-  it "should fail" do
+describe "a failing example" do
+  it "fails" do
     true.should be false
   end
+end
 
-  it "should be pending"
+describe "a pending example" do
+  it "is not run"
+end
 
-  describe "nested" do
-    it "should succeed" do
+describe "outer context" do
+  it "passes" do
+    true.should be true
+  end
+
+  describe "inner context" do
+    it "passes" do
       true.should be true
     end
   end
