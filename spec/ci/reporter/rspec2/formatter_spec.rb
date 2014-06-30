@@ -1,11 +1,16 @@
 require File.dirname(__FILE__) + "/../../../spec_helper.rb"
 require File.dirname(__FILE__) + "/../../../support/rspec2"
 require 'ci/reporter/rspec'
+require 'ci/reporter/rspec2/formatter'
 require 'stringio'
 
 module CI::Reporter::RSpec2
   describe Formatter do
     include RSpec2Helpers
+
+    before(:each) do
+      skip "RSpec 3 present, skipping RSpec 2 tests" if CI::Reporter::RSPEC_3_AVAILABLE
+    end
 
     before(:each) do
       @error = double("error")

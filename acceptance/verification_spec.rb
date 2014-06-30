@@ -1,6 +1,11 @@
 require 'rexml/document'
 require 'ci/reporter/test_utils/accessor'
 require 'ci/reporter/test_utils/shared_examples'
+begin
+  require 'rspec/collection_matchers'
+rescue LoadError
+  # This gem doesn't support all versions of RSpec
+end
 
 REPORTS_DIR = File.dirname(__FILE__) + '/reports'
 

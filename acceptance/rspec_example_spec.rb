@@ -1,3 +1,9 @@
+RSpec.configure do |config|
+  config.expect_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
+end
+
 describe "a passing example" do
   it "passes" do
     true.should be true
