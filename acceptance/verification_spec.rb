@@ -17,7 +17,9 @@ describe "RSpec acceptance" do
 
   let(:passing_report_path) { File.join(REPORTS_DIR, 'SPEC-a-passing-example.xml') }
   let(:failing_report_path) { File.join(REPORTS_DIR, 'SPEC-a-failing-example.xml') }
+  let(:errored_report_path) { File.join(REPORTS_DIR, 'SPEC-an-errored-example.xml') }
   let(:pending_report_path) { File.join(REPORTS_DIR, 'SPEC-a-pending-example.xml') }
+  let(:failure_in_before_report_path) { File.join(REPORTS_DIR, 'SPEC-a-failure-in-a-before-block.xml') }
   let(:nested_outer_report_path) { File.join(REPORTS_DIR, 'SPEC-outer-context.xml') }
   let(:nested_inner_report_path) { File.join(REPORTS_DIR, 'SPEC-outer-context-inner-context.xml') }
 
@@ -52,6 +54,18 @@ describe "RSpec acceptance" do
     it_behaves_like "nothing was output"
   end
 
+  describe "the errored test" do
+    subject(:result) { Accessor.new(load_xml_result(errored_report_path)) }
+
+    it { should have(1).errors }
+    it { should have(0).failures }
+    it { should have(1).testcases }
+
+    it_behaves_like "a report with consistent attribute counts"
+    it_behaves_like "assertions are not tracked"
+    it_behaves_like "nothing was output"
+  end
+
   describe "the pending test" do
     subject(:result) { Accessor.new(load_xml_result(pending_report_path)) }
 
@@ -63,6 +77,18 @@ describe "RSpec acceptance" do
       subject { result.skipped_count }
       it { should eql 1 }
     end
+
+    it_behaves_like "a report with consistent attribute counts"
+    it_behaves_like "assertions are not tracked"
+    it_behaves_like "nothing was output"
+  end
+
+  describe "the test that fails in a before block" do
+    subject(:result) { Accessor.new(load_xml_result(failure_in_before_report_path)) }
+
+    it { should have(0).errors }
+    it { should have(1).failures }
+    it { should have(1).testcases }
 
     it_behaves_like "a report with consistent attribute counts"
     it_behaves_like "assertions are not tracked"

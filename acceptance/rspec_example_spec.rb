@@ -10,8 +10,24 @@ describe "a failing example" do
   end
 end
 
+describe "an errored example" do
+  it "errors" do
+    raise "What happened?"
+  end
+end
+
 describe "a pending example" do
   it "is not run"
+end
+
+describe "a failure in a before block" do
+  before do
+    true.should be false
+  end
+
+  it "doesn't matter" do
+    true.should be true
+  end
 end
 
 describe "outer context" do
