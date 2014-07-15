@@ -9,13 +9,6 @@ end
 
 REPORTS_DIR = File.dirname(__FILE__) + '/reports'
 
-shared_examples "assertions are not tracked" do
-  describe "the assertion count" do
-    subject { result.assertions_count }
-    it { should eql 0 }
-  end
-end
-
 describe "RSpec acceptance" do
   include CI::Reporter::TestUtils::SharedExamples
   Accessor = CI::Reporter::TestUtils::Accessor
@@ -50,7 +43,7 @@ describe "RSpec acceptance" do
     describe "the failure" do
       subject(:failure) { result.failures.first }
       it "indicates the type" do
-        failure.attributes['type'].should =~ /ExpectationNotMetError/
+        failure.type.should =~ /ExpectationNotMetError/
       end
     end
 
