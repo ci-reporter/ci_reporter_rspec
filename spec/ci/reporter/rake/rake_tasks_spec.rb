@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/../../../spec_helper.rb"
+require File.dirname(__FILE__) + "/../../../spec_helper"
 require 'rake'
 
 require 'ci/reporter/internal'
@@ -56,7 +56,7 @@ describe "Rake tasks" do
     it "appends new options" do
       ENV["SPEC_OPTS"] = "previous-value".freeze
       rake["ci:setup:rspec"].invoke
-      spec_opts.should match(/previous-value.*CI::Reporter::RSpecFormatter\b/)
+      expect(spec_opts).to match(/previous-value.*CI::Reporter::RSpecFormatter\b/)
     end
   end
 end

@@ -4,17 +4,13 @@ require 'rspec/core/formatters/base_formatter'
 module CI
   module Reporter
     # Wrapper around a <code>RSpec</code> error or failure to be used by the test suite to interpret results.
-    class RSpec2Failure
+    class RSpec3Failure
       attr_reader :exception
 
-      def initialize(example, formatter)
+      def initialize(notification, formatter)
         @formatter = formatter
-        @example = example
-        if @example.respond_to?(:execution_result)
-          @exception = @example.execution_result[:exception] || @example.execution_result[:exception_encountered]
-        else
-          @exception = @example.metadata[:execution_result][:exception]
-        end
+        @notification = notification
+        @exception = @notification.exception
       end
 
       def name
@@ -38,7 +34,7 @@ module CI
         output.push "#{exception.class.name << ":"}" unless exception.class.name =~ /RSpec/
         output.push @exception.message
 
-        [@formatter.format_backtrace(@exception.backtrace, @example)].flatten.each do |backtrace_info|
+        [@notification.formatted_backtrace].flatten.each do |backtrace_info|
           backtrace_info.lines.each do |line|
             output.push "     #{line}"
           end
@@ -49,60 +45,60 @@ module CI
 
     # Custom +RSpec+ formatter used to hook into the spec runs and capture results.
     class RSpecFormatter < ::RSpec::Core::Formatters::BaseFormatter
+      ::RSpec::Core::Formatters.register self, :example_group_started, :example_started, :example_failed, :example_passed, :example_pending, :dump_summary
+
       attr_accessor :report_manager
       def initialize(*args)
         @report_manager = ReportManager.new("spec")
         @suite = nil
       end
 
-      def example_group_started(example_group)
-        new_suite(description_for(example_group))
+      def example_group_started(group_notification)
+        new_suite(description_for(group_notification))
       end
 
-      def example_started(name_or_example)
+      def example_started(_example_notification)
         spec = TestCase.new
         @suite.testcases << spec
         spec.start
       end
 
-      def example_failed(name_or_example, *rest)
+      def example_failed(example_notification)
         # In case we fail in before(:all)
-        example_started(name_or_example) if @suite.testcases.empty?
+        example_started(example_notification) if @suite.testcases.empty?
 
-        failure = RSpec2Failure.new(name_or_example, self)
+        failure = RSpec3Failure.new(example_notification, self)
 
         spec = @suite.testcases.last
         spec.finish
-        spec.name = description_for(name_or_example)
+        spec.name = description_for(example_notification)
         spec.failures << failure
       end
 
-      def example_passed(name_or_example)
+      def example_passed(example_notification)
         spec = @suite.testcases.last
         spec.finish
-        spec.name = description_for(name_or_example)
+        spec.name = description_for(example_notification)
       end
 
-      def example_pending(*args)
-        name = description_for(args[0])
+      def example_pending(example_notification)
+        name = description_for(example_notification)
         spec = @suite.testcases.last
         spec.finish
         spec.name = "#{name} (PENDING)"
         spec.skipped = true
       end
 
-      def dump_summary(*args)
+      def dump_summary(_summary_notification)
         write_report
       end
 
       private
-      def description_for(name_or_example)
-        if name_or_example.respond_to?(:full_description)
-          name_or_example.full_description
-        elsif name_or_example.respond_to?(:metadata)
-          name_or_example.metadata[:example_group][:full_description]
-        elsif name_or_example.respond_to?(:description)
-          name_or_example.description
+      def description_for(notification)
+        if notification.respond_to?(:example)
+          notification.example.full_description
+        elsif notification.respond_to?(:group)
+          notification.group.description
         else
           "UNKNOWN"
         end
