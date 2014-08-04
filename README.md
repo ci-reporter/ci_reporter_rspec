@@ -13,8 +13,7 @@ system.
 
 ## Supported versions
 
-The latest release of RSpec 2.14 and 2.99 are supported. RSpec 3 is
-not yet supported.
+The latest release of RSpec 2.14, 2.99 and 3 are supported.
 
 ## Installation
 
