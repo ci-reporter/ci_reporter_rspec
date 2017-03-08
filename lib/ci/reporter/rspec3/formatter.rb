@@ -46,6 +46,14 @@ module CI::Reporter
         write_report
       end
 
+      def output
+	# Cannot delegate to @report_manager because:
+        #  -  filename_for is private
+        #  - @suite is Nil at the point this method is called
+	#@report_manager.filename_for(@suite)        
+	"spec/report/dummy-out.txt"
+      end
+
       private
 
       def current_spec
@@ -64,9 +72,6 @@ module CI::Reporter
         @suite.start
       end
 
-      def output
-	@report_manager.filename_for(@suite)        
-      end
     end
 
     ::RSpec::Core::Formatters.register Formatter,
