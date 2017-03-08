@@ -63,6 +63,10 @@ module CI::Reporter
         @suite = TestSuite.new(name)
         @suite.start
       end
+
+      def output
+	@report_manager.filename_for(@suite)        
+      end
     end
 
     ::RSpec::Core::Formatters.register Formatter,
